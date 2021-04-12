@@ -21,6 +21,7 @@ import binascii
 import copy
 import time
 import socket
+import re
 import estreamer
 import estreamer.adapters.kvpair
 import estreamer.definitions as definitions
@@ -46,7 +47,7 @@ CEF_DEV_VERSION = '6.0'
 PACKET_LENGTH_MAX = 1022
 
 # Output encoding: ascii / utf8 or hex
-PACKET_ENCODING = 'ascii'
+PACKET_ENCODING = 'utf8'
 
 
 
@@ -144,7 +145,7 @@ MAPPING = {
             'rt': lambda rec: rec['eventSecond'] * 1000,
             'start': lambda rec: rec['packetSecond'] * 1000,
             'deviceExternalId': lambda rec: rec['deviceId'],
-            'cs1': lambda rec: __packetData( rec['packetData'] )
+            'zz_payload': lambda rec: __packetData( rec['packetData'] )
         },
 
         'fields': {
@@ -704,13 +705,19 @@ class Cef( object ):
 
     @staticmethod
     def __sanitize( value ):
-        value = str(value)
-        
+        value = str( value )
+
         # Escape \ " ]
         value = value.replace('\\', '\\\\')
         value = value.replace('"', '\\"')
         value = value.replace(']', '\\]')
         value = value.replace('|', '\|')
+        value = value.replace('=', '\=')
+        value = value.replace('\n', '\\n')
+        value = value.replace('\r', '\\r')
+        if value.startswith('"') and value.endswith('"'):
+            value = re.sub(r'^"', '', value)
+            value = re.sub(r'"$', '', value)
 
         return value
 
