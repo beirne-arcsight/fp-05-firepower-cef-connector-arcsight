@@ -68,13 +68,25 @@ class Connection( object ):
         else:
             self.logger.info('Using TLS v1.0')
 
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
+        context.load_verify_locations(self.pkcs12.certificateFilepath)
+        context.load_cert_chain(self.pkcs12.certificateFilepath,
+            keyfile=self.pkcs12.privateKeyFilepath)
+        context.minimum_version = tlsVersion
 
-        self.socket = ssl.wrap_socket(
+        self.socket = context.wrap_socket(
             sock,
-            keyfile = self.pkcs12.privateKeyFilepath,
-            certfile = self.pkcs12.certificateFilepath,
             do_handshake_on_connect = True,
-            ssl_version = tlsVersion)
+            server_hostname=host)
+
+#        self.socket = ssl.wrap_socket(
+#            sock,
+#            keyfile = self.pkcs12.privateKeyFilepath,
+#            certfile = self.pkcs12.certificateFilepath,
+#            do_handshake_on_connect = True,
+#            ssl_version = tlsVersion)
 
         try:
             self.socket.settimeout( self.settings.connectTimeout )
