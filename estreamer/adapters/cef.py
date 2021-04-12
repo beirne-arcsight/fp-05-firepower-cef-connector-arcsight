@@ -46,9 +46,9 @@ CEF_DEV_VERSION = '6.0'
 # Packet truncation length
 PACKET_LENGTH_MAX = 1022
 
-# Output encoding: ascii / utf8 or hex
-PACKET_ENCODING = 'utf8'
-
+# Output encoding: ascii / utf8 / arcsight or hex
+PACKET_ENCODING = 'arcsight'
+payload_field = 'zz_payload' if PACKET_ENCODING == 'arcsight' else 'cs1'
 
 
 def __severity( priority, impact ):
@@ -118,6 +118,9 @@ def __packetData( data ):
     elif PACKET_ENCODING == 'utf8':
         payload = packet.getPayloadAsUtf8()
 
+    elif PACKET_ENCODING == 'arcsight':
+        payload = __sanitize_payload(repr(packet.getPayloadAsUtf8()))
+	
     elif PACKET_ENCODING == 'hex':
         payload = packet.getPayloadAsHex()
 
@@ -126,6 +129,18 @@ def __packetData( data ):
 
     return payload[ 0 : PACKET_LENGTH_MAX ]
 
+def __sanitize_payload(payload: str) -> str:
+    '''
+    Remove hex escapes from string for readability.
+    Remove quotation marks from around string for CEF compliance
+    '''
+
+    nohex = re.sub(r'(?:\\x[\da-f][\da-f])+',' ', payload)
+
+    if nohex.startswith("'") and nohex.endswith("'"):
+        return re.sub(r"^'(.*)'$", r'\1', nohex)
+
+    return nohex
 
 
 MAPPING = {
@@ -145,7 +160,7 @@ MAPPING = {
             'rt': lambda rec: rec['eventSecond'] * 1000,
             'start': lambda rec: rec['packetSecond'] * 1000,
             'deviceExternalId': lambda rec: rec['deviceId'],
-            'zz_payload': lambda rec: __packetData( rec['packetData'] )
+            payload_field: lambda rec: __packetData( rec['packetData'] )
         },
 
         'fields': {
