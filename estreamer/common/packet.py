@@ -17,7 +17,6 @@
 #*********************************************************************/
 from __future__ import absolute_import
 import binascii
-import struct
 
 class Packet( object ):
     """
@@ -37,8 +36,11 @@ class Packet( object ):
         self.layer3HeaderLength = 0
 
     def __getNyble( self, indexNyble ):
+        '''
+        Return the indexNyble'th nyble from self.data
+        '''
         byteIndex = int(indexNyble/2)
-        byte = struct.unpack( '>B', self.data[byteIndex] )[0]
+        byte = self.data[byteIndex]
         if indexNyble % 2 == 0:
             mask = 0b11110000
             return ( byte & mask ) >> 4
