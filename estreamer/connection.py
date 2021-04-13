@@ -68,8 +68,8 @@ class Connection( object ):
         else:
             self.logger.info('Using TLS v1.0')
 
-        context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-        context.check_hostname = False
+        context = ssl.create_default_context()
+        context.check_hostname = self.settings.verifyHost
         context.verify_mode = ssl.CERT_NONE
         context.load_verify_locations(self.pkcs12.certificateFilepath)
         context.load_cert_chain(self.pkcs12.certificateFilepath,

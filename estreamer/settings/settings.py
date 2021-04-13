@@ -71,6 +71,7 @@ class Settings( object ):
         self.port = server['port']
         self.tlsVersion = server['tlsVersion']
         self.pkcs12Filepath = server['pkcs12Filepath']
+        self.verifyHost = server['verifyHost']
 
         self.connectTimeout = jsonSettings['connectTimeout']
         self.responseTimeout = jsonSettings['responseTimeout']
