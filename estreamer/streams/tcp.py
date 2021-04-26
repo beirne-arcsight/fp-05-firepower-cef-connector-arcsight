@@ -17,6 +17,7 @@
 #*********************************************************************/
 
 import socket
+import estreamer
 from estreamer.streams.base import Base
 
 # See: # https://wiki.python.org/moin/UdpCommunication
@@ -29,11 +30,16 @@ class TcpStream( Base ):
         self.encoding = encoding
         self.socket = None
 
-
+        self.logger = estreamer.crossprocesslogging.getLogger(
+            self.__class__.__name__ )
 
     def __connect( self ):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
-        self.socket.connect( ( self.host, self.port) )
+        try:
+            self.socket.connect( ( self.host, self.port) )
+        except ConnectionRefusedError as err:
+            self.logger.error('Connection to {0}:{1} refused'.format(self.host, self.port))
+            raise err
 
 
 
