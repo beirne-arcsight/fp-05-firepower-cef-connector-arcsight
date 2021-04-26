@@ -356,6 +356,10 @@ class Controller( object ):
             while len( self.processes ) > 0:
                 proxy = self.processes[0]
 
+                self.logger.debug( 'Stopping process {0} ({1})'.format(
+                    proxy.process.pid,
+                    proxy.process.name) )
+
                 if proxy.process.is_alive():
                     # Send a stop message but don't wait for a response. It's possible
                     # it's already in an error condition / dying and can't reply. Its
@@ -384,7 +388,8 @@ class Controller( object ):
         service
         """
         if parentPid != os.getpid():
-            self.logger.debug( 'Stop signal received but pids do not match' )
+            self.logger.debug( 'Stop signal received but pids do not match. Received PID {0}, process PID is {1}'.format(
+                               parentPid, os.getpid()) )
             return
 
         self.__stop()
