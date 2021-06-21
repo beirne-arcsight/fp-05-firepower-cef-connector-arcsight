@@ -1,3 +1,5 @@
 *.swp
 *.tgz
 *~
+venv/
+.idea
